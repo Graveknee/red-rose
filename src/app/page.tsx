@@ -53,7 +53,7 @@ export default function Home() {
     { key: "achievements", label: "Achievements" },
   ];
 
-  const vocations = ["Elite Knight", "Royal Paladin", "Master Sorcerer", "Elder Druid"];
+  const vocations = ["Elite Knight", "Royal Paladin", "Master Sorcerer", "Elder Druid", "Exalted Monk"];
 
   // Check if cache is valid
   const isCacheValid = (cachedData: CachedData) => {
