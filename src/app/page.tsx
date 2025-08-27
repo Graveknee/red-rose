@@ -76,7 +76,6 @@ export default function Home() {
             strokeDashoffset="600"
             className="w-190 h-190 relative z-10 drop-shadow-lg"
             viewBox="0 0 800 800"
-            style={{ enableBackground: "new 0 0 800 800" }}
           >
             <g id="XMLID_1_">
               <path
