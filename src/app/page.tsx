@@ -1,31 +1,20 @@
 "use client";
 
-import { main } from "framer-motion/client";
 import { useEffect, useState } from "react";
 import FrontpageMenu from "@/components/frontpage-menu";
-import { useGuildData } from "@/hooks/useGuildData";
+import { useGuildData } from "@/hooks/use-guild-data";
 
 export default function Home() {
-  const [isClient, setIsClient] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const { preloadGuildData, loading, loadingProgress, categoryData, characterInfo } = useGuildData();
-
-  // Only run client-side code after hydration
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { preloadGuildData } = useGuildData();
 
   useEffect(() => {
-    if (isClient) {
-      console.log('🏠 Frontpage: Starting preload...');
-      preloadGuildData();
-    }
-  }, [preloadGuildData, isClient]);
+  preloadGuildData();
+}, [preloadGuildData]);
 
   useEffect(() => {
     const path = document.querySelector("#XMLID_226_") as SVGPathElement;
     if (path) {
-      // Delay the animation slightly for better visual impact
       setTimeout(() => {
         path.style.transition = "stroke-dashoffset 3s ease-in-out";
         path.style.strokeDashoffset = "0";
@@ -33,18 +22,20 @@ export default function Home() {
     }
   }, []);
 
-  // Mouse tracking for subtle parallax effects
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+  let frameId: number;
+  const handleMouseMove = (e: MouseEvent) => {
+    if (frameId) cancelAnimationFrame(frameId);
+    frameId = requestAnimationFrame(() => {
       setMousePosition({
         x: (e.clientX / window.innerWidth - 0.5) * 20,
         y: (e.clientY / window.innerHeight - 0.5) * 20
       });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    });
+  };
+  window.addEventListener('mousemove', handleMouseMove);
+  return () => window.removeEventListener('mousemove', handleMouseMove);
+}, []);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 relative overflow-hidden">
@@ -53,8 +44,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-rose-200 to-pink-200 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
-
-      {/* Rose SVG positioned in upper left with elegant styling */}
+      {/* Rose SVG */}
       <div 
         className="absolute top-4 xl:left-80 left-[-24px] z-10 transform transition-transform duration-300 ease-out"
         style={{
@@ -77,6 +67,7 @@ export default function Home() {
             className="w-190 h-190 relative z-10 drop-shadow-lg"
             viewBox="0 0 800 800"
           >
+            <title>Red Rose</title>
             <g id="XMLID_1_">
               <path
                 id="XMLID_226_"
@@ -100,11 +91,10 @@ export default function Home() {
           </svg>
         </div>
       </div>
-
-      {/* Main content container - perfectly centered */}
+      {/* Main container */}
       <div className="min-h-screen flex items-center justify-center relative z-20">
         <div className="max-w-5xl mx-auto px-8 py-12 text-center">
-          {/* Hero title with enhanced typography */}
+          {/* Hero */}
           <div className="mb-16 transform hover:scale-105 transition-transform duration-300">
             <h1 className="font-serif text-7xl md:text-8xl font-black bg-gradient-to-r from-rose-600 via-rose-800 to-pink-600 bg-clip-text text-transparent mb-6 tracking-tight leading-none">
               Red Rose
@@ -114,26 +104,16 @@ export default function Home() {
               A Tibia Guild Since December 7th 1998
             </p>
           </div>
-
-          {/* Enhanced bento grid container */}
+          {/* Bento grid container */}
           <div 
             className="transform transition-all duration-500"
             style={{
               transform: `translateY(${mousePosition.y * 0.1}px)`
             }}
           >
-            {/* <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-rose-100 relative overflow-hidden"> */}
-              {/* Subtle gradient overlay */}
-              {/* <div className="absolute inset-0 bg-gradient-to-br from-rose-50/50 to-pink-50/50 rounded-3xl"></div> */}
-              
-              {/* Floating decorative elements */}
-              {/* <div className="absolute top-4 right-4 w-3 h-3 bg-rose-300 rounded-full opacity-60 animate-ping"></div>
-              <div className="absolute bottom-6 left-6 w-2 h-2 bg-pink-300 rounded-full opacity-60 animate-ping delay-500"></div>
-               */}
-              <div className="relative z-10">
-                <FrontpageMenu />
-              </div>
-            {/* </div> */}
+            <div className="relative z-10">
+              <FrontpageMenu />
+            </div>
           </div>          
         </div>
       </div>
