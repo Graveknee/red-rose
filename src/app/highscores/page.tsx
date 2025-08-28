@@ -1,10 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { RefreshCw } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Axe, BowArrow, Fish, Hammer, HandFist, RefreshCw, Shield, Star, Sword, Trophy, Users, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { useGuildData } from "@/hooks/useGuildData";
 
 interface HighscoreEntry {
   name: string;
@@ -25,196 +24,67 @@ interface CharacterBasicInfo {
   level: number;
 }
 
-interface CachedData {
-  timestamp: number;
-  categoryData: CategoryData;
-  characterInfo: CharacterBasicInfo[];
-}
-
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
-
 export default function HighscoresPage() {
-  const [guildMembers, setGuildMembers] = useState<Set<string>>(new Set());
-  const [categoryData, setCategoryData] = useState<CategoryData>({});
-  const [characterInfo, setCharacterInfo] = useState<CharacterBasicInfo[]>([]);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState('');
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const router = useRouter();
+  const { 
+    categoryData, 
+    characterInfo, 
+    loading, 
+    loadingProgress, 
+    lastUpdated, 
+    refreshData,
+    loadFromCache 
+  } = useGuildData();
 
   const categories = [
-    { key: "experience", label: "Experience" },
-    { key: "magic", label: "Magic Level" },
-    { key: "sword", label: "Sword Fighting" },
-    { key: "axe", label: "Axe Fighting" },
-    { key: "club", label: "Club Fighting" },
-    { key: "distance", label: "Distance Fighting" },
-    { key: "shielding", label: "Shielding" },
-    { key: "fist", label: "Fist Fighting" },
-    { key: "fishing", label: "Fishing" },
-    { key: "achievements", label: "Achievements" },
+    { key: "experience", label: "Experience", icon: Trophy, color: "rose" },
+    { key: "magic", label: "Magic Level", icon: Zap, color: "purple" },
+    { key: "sword", label: "Sword Fighting", icon: Sword, color: "blue" },
+    { key: "axe", label: "Axe Fighting", icon: Axe, color: "green" },
+    { key: "club", label: "Club Fighting", icon: Hammer, color: "amber" },
+    { key: "distance", label: "Distance Fighting", icon: BowArrow, color: "emerald" },
+    { key: "shielding", label: "Shielding", icon: Shield, color: "cyan" },
+    { key: "fist", label: "Fist Fighting", icon: HandFist, color: "orange" },
+    { key: "fishing", label: "Fishing", icon: Fish, color: "teal" },
+    { key: "achievements", label: "Achievements", icon: Trophy, color: "pink" },
   ];
 
-  const vocations = ["Elite Knight", "Royal Paladin", "Master Sorcerer", "Elder Druid", "Exalted Monk"];
+  const vocations = [
+    { name: "Elite Knight", color: "rose", gradient: "from-rose-500 to-pink-600" },
+    { name: "Royal Paladin", color: "emerald", gradient: "from-emerald-500 to-green-600" },
+    { name: "Master Sorcerer", color: "blue", gradient: "from-blue-500 to-indigo-600" },
+    { name: "Elder Druid", color: "amber", gradient: "from-amber-500 to-orange-600" },
+    { name: "Exalted Monk", color: "purple", gradient: "from-purple-500 to-violet-600" }
+  ];
 
-  // Check if cache is valid
-  const isCacheValid = (cachedData: CachedData) => {
-    return Date.now() - cachedData.timestamp < CACHE_DURATION;
-  };
-
-  // Load data from localStorage
-  const loadFromCache = (): CachedData | null => {
-    try {
-      const cached = localStorage.getItem('red-rose-highscores');
-      if (cached) {
-        const data: CachedData = JSON.parse(cached);
-        if (isCacheValid(data)) {
-          return data;
-        }
-      }
-    } catch (error) {
-      console.error('Error loading cache:', error);
-    }
-    return null;
-  };
-
-  // Save data to localStorage
-  const saveToCache = (categoryData: CategoryData, characterInfo: CharacterBasicInfo[]) => {
-    try {
-      const cacheData: CachedData = {
-        timestamp: Date.now(),
-        categoryData,
-        characterInfo
-      };
-      localStorage.setItem('red-rose-highscores', JSON.stringify(cacheData));
-    } catch (error) {
-      console.error('Error saving cache:', error);
-    }
-  };
-
-  const fetchData = async (showProgress = false) => {
-    try {
-      if (showProgress) setIsUpdating(true);
-
-      // First, get guild members
-      if (showProgress) setLoadingProgress('Fetching guild members...');
-      const guildRes = await fetch("https://api.tibiadata.com/v4/guild/Red%20Rose");
-      const guildData = await guildRes.json();
-      const members = guildData.guild?.members || [];
-      const memberNames = new Set<string>(members.map((m: any) => String(m.name)));
-      setGuildMembers(memberNames);
-
-      // Get basic character info for vocation-based highscores
-      if (showProgress) setLoadingProgress('Fetching character info...');
-      const charInfoPromises = members.slice(0, 50).map(async (member: any) => {
-        try {
-          const charRes = await fetch(
-            `https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`
-          );
-          const charData = await charRes.json();
-          const charInfo = charData.character?.character;
-          
-          if (charInfo) {
-            return {
-              name: charInfo.name,
-              vocation: charInfo.vocation,
-              level: charInfo.level || 0
-            };
-          }
-        } catch (err) {
-          // Silent error handling
-        }
-        return null;
-      });
-
-      const resolvedCharInfo = (await Promise.all(charInfoPromises)).filter(Boolean) as CharacterBasicInfo[];
-      setCharacterInfo(resolvedCharInfo);
-
-      // Now fetch highscores for each category
-      const newCategoryData: CategoryData = {};
-      
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i];
-        if (showProgress) setLoadingProgress(`Fetching ${category.label} highscores... (${i + 1}/${categories.length})`);
-        
-        try {
-          let allHighscores: any[] = [];
-          let currentPage = 1;
-          let hasMorePages = true;
-          let guildMembersFound = 0;
-          
-          // Fetch pages until we find 5 guild members or reach page limit
-          while (hasMorePages && currentPage <= 20 && guildMembersFound < 5) {
-            const hsRes = await fetch(
-              `https://api.tibiadata.com/v4/highscores/Antica/${category.key}/all/${currentPage}`
-            );
-            const hsData = await hsRes.json();
-            
-            if (hsData.highscores?.highscore_list && hsData.highscores.highscore_list.length > 0) {
-              allHighscores.push(...hsData.highscores.highscore_list);
-              
-              // Count guild members found so far
-              guildMembersFound = allHighscores.filter(entry => 
-                memberNames.has(entry.name)
-              ).length;
-              
-              // Check if we have more pages
-              const totalPages = hsData.highscores.highscore_page?.total_pages || 1;
-              hasMorePages = currentPage < totalPages;
-              currentPage++;
-            } else {
-              hasMorePages = false;
-            }
-            
-            // Small delay to be nice to the API
-            await new Promise(resolve => setTimeout(resolve, 50));
-          }
-          
-          // Filter to only guild members and take top 5
-          const guildHighscores = allHighscores
-            .filter(entry => memberNames.has(entry.name))
-            .slice(0, 5);
-          
-          newCategoryData[category.key] = guildHighscores;
-          
-        } catch (err) {
-          newCategoryData[category.key] = [];
-        }
-      }
-
-      setCategoryData(newCategoryData);
-      setLastUpdated(new Date());
-      setIsDataLoaded(true);
-      
-      // Save to cache
-      saveToCache(newCategoryData, resolvedCharInfo);
-      
-    } catch (err) {
-      console.error("Error in fetchData:", err);
-    } finally {
-      setIsUpdating(false);
-      setLoadingProgress('');
-    }
-  };
-
-  // Load data on component mount
+  // Mouse tracking for subtle parallax effects
   useEffect(() => {
-    const cachedData = loadFromCache();
-    if (cachedData) {
-      setCategoryData(cachedData.categoryData);
-      setCharacterInfo(cachedData.characterInfo);
-      setLastUpdated(new Date(cachedData.timestamp));
-      setIsDataLoaded(true);
-    } else {
-      fetchData();
-    }
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth - 0.5) * 20,
+        y: (e.clientY / window.innerHeight - 0.5) * 20
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Load cached data on mount if available
+  useEffect(() => {
+    const cachedData = loadFromCache();
+    if (!cachedData && Object.keys(categoryData).length === 0) {
+      // No cache and no data loaded, this will trigger the preload from frontpage
+      console.log('No data available, expecting preload from frontpage');
+    }
+  }, [loadFromCache, categoryData]);
+
   const handleRefresh = () => {
-    fetchData(true);
+    refreshData();
   };
 
-  // Get top 5 for each vocation based on character info we fetched
+  // Get top 5 for each vocation based on character info
   const getTopByVocation = (vocation: string) => {
     return characterInfo
       .filter(char => {
@@ -227,137 +97,286 @@ export default function HighscoresPage() {
       .slice(0, 5);
   };
 
+type ColorKey =
+  | "rose"
+  | "purple"
+  | "blue"
+  | "green"
+  | "yellow"
+  | "orange"
+  | "red"
+  | "gray"
+  | "indigo"
+  | "pink";
+
+const colors: Record<ColorKey, {
+  bg: string;
+  border: string;
+  text: string;
+  icon: string;
+  iconHover: string;
+}> = {
+  rose: { bg: 'from-rose-50/80 to-pink-50/80', border: 'border-rose-100/50', text: 'text-rose-600', icon: 'bg-rose-100', iconHover: 'group-hover:bg-rose-200' },
+  purple: { bg: 'from-purple-50/80 to-indigo-50/80', border: 'border-purple-100/50', text: 'text-purple-600', icon: 'bg-purple-100', iconHover: 'group-hover:bg-purple-200' },
+  blue: { bg: 'from-blue-50/80 to-cyan-50/80', border: 'border-blue-100/50', text: 'text-blue-600', icon: 'bg-blue-100', iconHover: 'group-hover:bg-blue-200' },
+  green: { bg: 'from-green-50/80 to-emerald-50/80', border: 'border-green-100/50', text: 'text-green-600', icon: 'bg-green-100', iconHover: 'group-hover:bg-green-200' },
+  yellow: { bg: 'from-yellow-50/80 to-amber-50/80', border: 'border-yellow-100/50', text: 'text-yellow-600', icon: 'bg-yellow-100', iconHover: 'group-hover:bg-yellow-200' },
+  orange: { bg: 'from-orange-50/80 to-amber-50/80', border: 'border-orange-100/50', text: 'text-orange-600', icon: 'bg-orange-100', iconHover: 'group-hover:bg-orange-200' },
+  red: { bg: 'from-red-50/80 to-rose-50/80', border: 'border-red-100/50', text: 'text-red-600', icon: 'bg-red-100', iconHover: 'group-hover:bg-red-200' },
+  gray: { bg: 'from-gray-50/80 to-slate-50/80', border: 'border-gray-100/50', text: 'text-gray-600', icon: 'bg-gray-100', iconHover: 'group-hover:bg-gray-200' },
+  indigo: { bg: 'from-indigo-50/80 to-violet-50/80', border: 'border-indigo-100/50', text: 'text-indigo-600', icon: 'bg-indigo-100', iconHover: 'group-hover:bg-indigo-200' },
+  pink: { bg: 'from-pink-50/80 to-rose-50/80', border: 'border-pink-100/50', text: 'text-pink-600', icon: 'bg-pink-100', iconHover: 'group-hover:bg-pink-200' },
+};
+
+function getColorClasses(color: string) {
+  return colors[color as ColorKey] || colors.rose;
+}
+
+
+  const isDataLoaded = Object.keys(categoryData).length > 0 || characterInfo.length > 0;
+
   return (
-    <main className="min-h-screen p-8 bg-gray-100 text-gray-900">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <button className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
-              ← Back
-            </button>
-          </Link>
-          <h1 className="text-3xl font-bold font-serif">Red Rose Guild Highscores</h1>
-        </div>
-        <div className="text-right">
-          <button
-            onClick={handleRefresh}
-            disabled={isUpdating}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            <RefreshCw className={`h-4 w-4 ${isUpdating ? 'animate-spin' : ''}`} />
-            {isUpdating ? 'Updating...' : 'Update'}
-          </button>
-          {lastUpdated && (
-            <p className="text-sm text-gray-600 mt-2">
-              Last updated: {lastUpdated.toLocaleString()}
-            </p>
-          )}
-        </div>
+    <main className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-pink-50 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-rose-200 to-pink-200 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-2/3 left-1/3 w-64 h-64 bg-gradient-to-r from-purple-200 to-blue-200 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
-      {isUpdating && loadingProgress && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
-      
-          <div className="flex items-center">
-            <RefreshCw className="animate-spin mr-2 h-4 w-4" />
-            
-            {loadingProgress}
-            <div className="container">
-    </div>
+
+
+
+      {/* Main content */}
+      <div className="relative z-20 px-8 py-12">
+        {/* Header */}
+        <div 
+          className="max-w-7xl mx-auto mb-12"
+          style={{
+            transform: `translateY(${mousePosition.y * 0.05}px)`
+          }}
+        >
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            {/* Title section */}
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => router.push('/')}
+                className="group flex items-center gap-2 bg-white/80 hover:bg-white backdrop-blur-sm border border-rose-100/50 rounded-2xl px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <ArrowLeft className="h-5 w-5 text-rose-600 group-hover:text-rose-700 transition-colors" />
+                <span className="text-rose-600 group-hover:text-rose-700 font-medium transition-colors">Back to Guild</span>
+              </button>
+              
+              <div>
+                <h1 className="text-4xl md:text-5xl font-serif font-black bg-gradient-to-r from-rose-600 via-rose-800 to-pink-600 bg-clip-text text-transparent mb-6 pb-2 leading-[1.1]">
+                  Guild Highscores
+                </h1>
+                <div className="h-1 w-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full shadow-sm"></div>
+              </div>
+            </div>
+
+            {/* Update section */}
+            <div className="flex flex-col items-end">
+              <button
+                onClick={handleRefresh}
+                disabled={loading}
+                className="group flex items-center gap-3 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 disabled:from-rose-300 disabled:to-pink-400 text-white px-6 py-3 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 disabled:hover:translate-y-0"
+              >
+                <RefreshCw className={`h-5 w-5 ${loading ? 'animate-spin' : 'group-hover:rotate-180'} transition-transform duration-300`} />
+                <span className="font-medium">
+                  {loading ? 'Updating...' : 'Refresh Data'}
+                </span>
+              </button>
+              
+              {lastUpdated && (
+                <p className="text-sm text-rose-600/70 mt-2 font-medium">
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </p>
+              )}
+            </div>
           </div>
         </div>
-      )}
 
-      {!isDataLoaded ? (
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <RefreshCw className="animate-spin mx-auto mb-4 h-8 w-8 text-blue-600" />
-            <p className="text-xl mb-2">Loading guild highscores...</p>
-            {loadingProgress && <p className="text-gray-600">{loadingProgress}</p>}
+        {/* Loading Progress - Show when loading OR when initial load without data */}
+        {(loading || (!isDataLoaded && loadingProgress)) && loadingProgress && (
+          <div className="max-w-7xl mx-auto mb-8">
+            <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-blue-100/50">
+              <div className="flex items-center justify-center space-x-3 mb-3">
+                <RefreshCw className="animate-spin h-5 w-5 text-blue-600" />
+                <span className="text-blue-700 font-medium">{loadingProgress}</span>
+              </div>
+              <div className="w-full bg-blue-100 rounded-full h-2 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {/* Skill categories */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((cat, idx) => {
-              const top = categoryData[cat.key] || [];
-              return (
-                <motion.div
-                  key={cat.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.1 }}
-                  className="h-full"
-                >
-                  <Card className="rounded-2xl shadow-lg h-full">
-                    <CardContent className="p-6 flex flex-col items-center text-center">
-                      <h2 className="text-xl font-bold mb-4">{cat.label}</h2>
-                      {top.length ? (
-                        <ul className="space-y-2 w-full">
-                          {top.map((entry, i) => (
-                            <li
-                              key={`${i}-${entry.name}`}
-                              className="flex justify-between w-full text-sm border-b border-gray-300 last:border-none pb-1"
-                            >
-                              <span>#{entry.rank} {entry.name}</span>
-                              <span>
-                                {cat.key === "experience" 
-                                  ? `${entry.level} (${entry.vocation})` 
-                                  : entry.value
-                                }
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500">No data available</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+        )}
 
-          {/* Top experience per vocation */}
-          <h2 className="text-2xl font-bold mt-12 mb-6 text-center">Top Experience by Vocation</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vocations.map((voc, idx) => {
-              const top = getTopByVocation(voc);
-              return (
-                <motion.div
-                  key={voc}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: idx * 0.1 }}
-                  className="h-full"
-                >
-                  <Card className="rounded-2xl shadow-lg h-full">
-                    <CardContent className="p-6 flex flex-col items-center text-center">
-                      <h3 className="text-xl font-bold mb-4">{voc}</h3>
-                      {top.length ? (
-                        <ul className="space-y-2 w-full">
-                          {top.map((char, i) => (
-                            <li
-                              key={`${i}-${char.name}`}
-                              className="flex justify-between w-full text-sm border-b border-gray-300 last:border-none pb-1"
-                            >
-                              <span>#{i + 1} {char.name}</span>
-                              <span>{char.level}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-gray-500">No players found</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+        {/* Loading State */}
+        {!isDataLoaded && !loading ? (
+          <div className="flex items-center justify-center min-h-96">
+            <div className="text-center">
+              <div className="relative mb-8">
+                <div className="absolute inset-0 bg-rose-300 rounded-full blur-xl opacity-20 animate-pulse"></div>
+                <RefreshCw className="animate-spin mx-auto h-12 w-12 text-rose-600 relative z-10" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Loading Guild Highscores</h2>
+              <p className="text-rose-600/80">Gathering the finest warriors of Red Rose...</p>
+            </div>
           </div>
-        </>
-      )}
+        ) : (
+          <div className="max-w-7xl mx-auto space-y-16">
+            {/* Skill Categories */}
+            <section>
+              <h2 className="text-3xl font-serif font-bold text-center mb-2 text-gray-800">Skill Rankings</h2>
+              <p className="text-center text-rose-600/80 mb-8">Excellence across all disciplines</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {categories.map((cat, idx) => {
+                  const top = categoryData[cat.key] || [];
+                  const Icon = cat.icon;
+                  const colorClasses = getColorClasses(cat.color);
+                  
+                  return (
+                    <div
+                      key={cat.key}
+                      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/90 to-white/80 backdrop-blur-lg border border-gray-100/50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                      style={{
+                        animationDelay: `${idx * 100}ms`
+                      }}
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${colorClasses.bg.replace('/80', '/20')} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                      
+                      <div className="relative p-6 h-full flex flex-col">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className={`p-2 rounded-xl ${colorClasses.icon} ${colorClasses.iconHover} transition-colors duration-300`}>
+                            <Icon className={`h-5 w-5 ${colorClasses.text}`} />
+                          </div>
+                          <h3 className="font-bold text-gray-900 text-lg">{cat.label}</h3>
+                        </div>
+                        
+                        <div className="flex-grow">
+                          {top.length > 0 ? (
+                            <div className="space-y-3">
+                              {top.slice(0, 5).map((entry, i) => (
+                                <div key={`${i}-${entry.name}`} className="flex items-center justify-between p-2 rounded-lg bg-gray-50/80 hover:bg-white/80 transition-colors">
+                                  <div className="flex items-center space-x-2">
+                                    <span className={`w-6 h-6 rounded-full ${i === 0 ? 'bg-amber-400' : i === 1 ? 'bg-gray-300' : 'bg-amber-200'} flex items-center justify-center text-xs font-bold text-white`}>
+                                      {i + 1}
+                                    </span>
+                                    <span className="font-medium text-gray-800 text-sm truncate">{entry.name}</span>
+                                  </div>
+                                  <span className={`text-xs font-bold ${colorClasses.text}`}>
+                                    {cat.key === "experience" ? `Lvl ${entry.level}` : entry.value.toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                              {top.length < 5 && (
+                                <div className="text-center text-xs text-gray-500 mt-2">
+                                  Only {top.length} guild member{top.length !== 1 ? 's' : ''} found
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <Users className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                              <p className="text-gray-400 text-sm">No guild members found</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* Vocation Rankings */}
+            <section>
+              <h2 className="text-3xl font-serif font-bold text-center mb-2 text-gray-800">Vocation Champions</h2>
+              <p className="text-center text-rose-600/80 mb-8">The strongest warriors in each calling</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {vocations.map((voc, idx) => {
+                  const top = getTopByVocation(voc.name);
+                  
+                  return (
+                    <div
+                      key={voc.name}
+                      className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-white/90 to-white/80 backdrop-blur-lg border border-gray-100/50 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${voc.gradient.replace('500', '100').replace('600', '200')}/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                      
+                      <div className="relative p-6">
+                        <div className="text-center mb-6">
+                          <h3 className={`text-xl font-bold bg-gradient-to-r ${voc.gradient} bg-clip-text text-transparent mb-2`}>
+                            {voc.name}
+                          </h3>
+                          <div className={`h-1 w-12 bg-gradient-to-r ${voc.gradient} mx-auto rounded-full`}></div>
+                        </div>
+                        
+                        {top.length > 0 ? (
+                          <div className="space-y-3">
+                            {top.map((char, i) => (
+                              <div key={`${i}-${char.name}`} className="flex items-center justify-between p-3 rounded-xl bg-gray-50/80 hover:bg-white/80 transition-colors">
+                                <div className="flex items-center space-x-3">
+                                  <span className={`w-8 h-8 rounded-full ${i === 0 ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : i === 1 ? 'bg-gradient-to-r from-gray-300 to-gray-400' : i === 2 ? 'bg-gradient-to-r from-amber-200 to-amber-300' : 'bg-gray-200'} flex items-center justify-center text-sm font-bold text-white shadow-md`}>
+                                    {i + 1}
+                                  </span>
+                                  <span className="font-medium text-gray-800 truncate">{char.name}</span>
+                                </div>
+                                <div className="text-right">
+                                  <div className={`text-sm font-bold bg-gradient-to-r ${voc.gradient} bg-clip-text text-transparent`}>
+                                    Level {char.level}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            {top.length < 5 && (
+                              <div className="text-center text-xs text-gray-500 mt-2">
+                                Only {top.length} {voc.name.toLowerCase()}{top.length !== 1 ? 's' : ''} found
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8">
+                            <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                            <p className="text-gray-400">No {voc.name.toLowerCase()}s found</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </div>
+        )}
+      </div>
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-rose-300 rounded-full animate-float opacity-40"></div>
+        <div className="absolute top-3/4 right-1/4 w-1 h-1 bg-pink-300 rounded-full animate-float delay-1000 opacity-40"></div>
+        <div className="absolute bottom-1/4 left-3/4 w-1 h-1 bg-purple-300 rounded-full animate-float delay-2000 opacity-40"></div>
+        <div className="absolute top-2/3 left-1/2 w-1 h-1 bg-blue-300 rounded-full animate-float delay-3000 opacity-40"></div>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { 
+            transform: translateY(0px) translateX(0px) rotate(0deg); 
+          }
+          33% { 
+            transform: translateY(-20px) translateX(10px) rotate(120deg); 
+          }
+          66% { 
+            transform: translateY(10px) translateX(-15px) rotate(240deg); 
+          }
+        }
+        .animate-float {
+          animation: float 8s ease-in-out infinite;
+        }
+      `}</style>
     </main>
   );
 }

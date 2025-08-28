@@ -134,26 +134,7 @@ export default function Home() {
                 <FrontpageMenu />
               </div>
             {/* </div> */}
-          </div>
-
-          {/* Loading indicator with enhanced styling */}
-          {isClient && loading && loadingProgress && (
-            <div className="mt-8 max-w-md mx-auto">
-              <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-rose-100">
-                <div className="flex items-center justify-center space-x-3 mb-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-rose-300 border-t-rose-600"></div>
-                  <span className="text-rose-700 font-medium">Preparing your experience</span>
-                </div>
-                <div className="w-full bg-rose-100 rounded-full h-2 overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-rose-400 to-pink-500 rounded-full transition-all duration-300 shadow-sm"
-                    style={{ width: '60%' }}
-                  ></div>
-                </div>
-                <p className="text-rose-600/70 text-sm mt-2">{loadingProgress}</p>
-              </div>
-            </div>
-          )}
+          </div>          
         </div>
       </div>
 
