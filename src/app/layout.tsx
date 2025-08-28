@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Red Rose Antica",
-  description: "Guild highscores for Tibia guild Red Rose",
+  title: "Red Rose",
+  description: "The guild portal for Tibia guild Red Rose",
 };
 
 export default function RootLayout({
