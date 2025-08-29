@@ -21,6 +21,7 @@ export default function GuildMembersPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterVocation, setFilterVocation] = useState('all');
+  const [yourLevel, setYourLevel] = useState<number | ''>('');
   const [filterRank, setFilterRank] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all'); 
   const [showFilters, setShowFilters] = useState(false); 
@@ -120,7 +121,13 @@ export default function GuildMembersPage() {
       const matchesVocation = filterVocation === 'all' || member.vocation === filterVocation;
       const matchesRank = filterRank === 'all' || member.rank === filterRank;
       const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
-      return matchesSearch && matchesVocation && matchesRank && matchesStatus;
+      let matchesLevelRange = true;
+      if (yourLevel) {
+        const minLevel = Math.floor(yourLevel * 2 / 3);
+        const maxLevel = Math.floor(yourLevel * 3 / 2);
+        matchesLevelRange = member.level >= minLevel && member.level <= maxLevel;
+      }
+      return matchesSearch && matchesVocation && matchesRank && matchesStatus && matchesLevelRange;
     })
     .sort((a, b) => {
       let compareValue = 0;
@@ -241,6 +248,17 @@ export default function GuildMembersPage() {
             {/* Filters - always visible on desktop, toggleable on mobile */}
             <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
               <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center">
+                 <div className="flex flex-col lg:flex-row lg:items-center gap-2">
+                <span className="text-sm font-medium text-gray-700 lg:hidden">Level for shared experience:</span>
+                <input
+                  type="number"
+                  min={1}
+                  value={yourLevel}
+                  onChange={(e) => setYourLevel(e.target.value ? parseInt(e.target.value) : '')}
+                  placeholder="Level for shared exp"
+                  className="w-full lg:w-auto px-4 py-2 border border-rose-100 rounded-xl bg-white/80 focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
+                />
+              </div>
                 <div className="flex flex-col lg:flex-row lg:items-center gap-2">
                   <div className="flex items-center gap-2 lg:hidden">
                     <Filter className="h-5 w-5 text-gray-600" />

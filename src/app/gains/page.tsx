@@ -247,7 +247,7 @@ export default function GainsPage() {
                             )}
                           </div>
                           {members.map((m) => (
-                            <div key={m.name} className="mb-2">
+                            <div key={m.name} className="mb-2 border-b border-gray-200 pb-2">
                               <h3 className="text-xl font-bold text-gray-800">
                                 {m.name}
                               </h3>

@@ -29,13 +29,13 @@ const timelineData: { [year: number]: TimelineEvent[] } = {
       type: "major",
     },
   ],
-  1998: [
+  2025: [
     {
-      year: 1998,
-      title: "I was 8 years old",
-      description: "Big boy pants",
+      year: 2025,
+      title: "Pyrrhic Blackheart joined Red Rose",
+      description: "We welcome our newest member, Pyrrhic Blackheart!",
       details:
-        "I remember feeling so grown up when I got my first pair of big boy pants.",
+        "Red Rose is proud to welcome Pyrrhic Blackheart as our newest member!",
       image: "/public/Red_Rose.gif",
       category: "Red Rose",
       type: "major",
