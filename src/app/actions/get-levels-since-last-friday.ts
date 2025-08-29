@@ -36,7 +36,7 @@ export async function getLevelsSinceLastFriday(guildName: string) {
   }
 
   const data = await res.json();
-  
+
   const currentMembers: GuildMember[] = data.guild.members.map((m: GuildMember) => ({
     name: m.name,
     level: m.level,
@@ -47,16 +47,17 @@ export async function getLevelsSinceLastFriday(guildName: string) {
     const initial = (snapshot.members as unknown as GuildMember[]).find(
       (m) => m.name === member.name
     );
-    const gained = initial ? member.level - initial.level : member.level;
-    return { name: member.name, levelsGained: gained };
+    if (!initial) return null;
+
+    return {
+      name: member.name,
+      levelsGained: member.level - initial.level,
+    };
   })
+  .filter((m): m is { name: string; levelsGained: number } => m !== null)
   .filter((m) => m.levelsGained !== 0)
-    .sort((a, b) => {
-    if (a.levelsGained > 0 && b.levelsGained > 0) return b.levelsGained - a.levelsGained;
-    if (a.levelsGained > 0) return -1;
-    if (b.levelsGained > 0) return 1;
-    return a.levelsGained - b.levelsGained;
-  });
+  .sort((a, b) => b.levelsGained - a.levelsGained);
+
 
   return levelsGained;
 }
