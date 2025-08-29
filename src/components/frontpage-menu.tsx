@@ -89,7 +89,7 @@ const features = [
     Icon: PersonIcon,
     name: "Roster",
     description: "View guild members, their vocations, and current status",
-    href: "#",
+    href: "/roster",
     cta: "View Roster",
     className: "col-span-3 lg:col-span-2",
     background: (
@@ -129,7 +129,7 @@ const features = [
     Icon: ReaderIcon,
     name: "Codex",
     description: "Read our codex",
-    href: "#",
+    href: "https://www.redrose-guild.com/viewtopic.php?t=61&sid=77e793602bfe2fcbea1791cd7739464f",
     cta: "Read More",
     className: "col-span-3 lg:col-span-1",
     background: (

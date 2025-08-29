@@ -253,7 +253,7 @@ export default function HighscoresPage() {
             <div className="flex items-center gap-6">
               <button type="button" onClick={() => router.push('/')} className="group flex items-center gap-2 bg-white/80 hover:bg-white backdrop-blur-sm border border-rose-100/50 rounded-2xl px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
                 <ArrowLeft className="h-5 w-5 text-rose-600 group-hover:text-rose-700 transition-colors" />
-                <span className="text-rose-600 group-hover:text-rose-700 font-medium transition-colors">Back to Guild</span>
+                <span className="text-rose-600 group-hover:text-rose-700 font-medium transition-colors">Back</span>
               </button>
 
               <div>
