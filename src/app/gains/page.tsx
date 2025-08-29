@@ -82,11 +82,11 @@ export default function GainsPage() {
   };
 
   const copyToClipboard = () => {
-    let text = "🏆 Guild Gains This Week 🏆\n\n";
+    let text = "Weekly Highscore\n\n";
     
     // Add podium winners
     if (topThree.length > 0) {
-      text += "🥇 PODIUM FINISHERS 🥇\n";
+      text += "PODIUM FINISHERS\n";
       topThree.forEach((member, index) => {
         const medal = index === 0 ? "🥇" : index === 1 ? "🥈" : "🥉";
         text += `${medal} ${member.name}: +${member.levelsGained} levels\n`;
@@ -96,7 +96,7 @@ export default function GainsPage() {
 
     // Add grouped members
     if (sortedGroups.length > 0) {
-      text += "OTHER GAMERS \n";
+      text += "HONORABLE MENTIONS \n";
       sortedGroups.forEach(([levels, names]) => {
         text += `+${levels} levels: ${names.join(", ")}\n`;
       });
