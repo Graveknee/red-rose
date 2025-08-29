@@ -23,10 +23,20 @@ export async function getLevelsSinceLastFriday(guildName: string) {
   });
 
   if (!snapshot) throw new Error("No snapshot found for last Friday");
+  
+  const url = `https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`;
+  console.log("Fetching guild data from:", url);
 
-  const res = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
-  if (!res.ok) throw new Error("Failed to fetch current guild data");
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("Guild fetch failed:", res.status, text.slice(0, 200));
+    throw new Error(`Failed to fetch current guild data: ${res.status}`);
+  }
+
   const data = await res.json();
+  
   const currentMembers: GuildMember[] = data.guild.members.map((m: GuildMember) => ({
     name: m.name,
     level: m.level,
