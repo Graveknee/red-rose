@@ -45,8 +45,9 @@ export async function getLevelsSinceLastFriday(guildName: string) {
   const levelsGained = currentMembers
   .map((member: GuildMember) => {
     const initial = (snapshot.members as unknown as GuildMember[]).find(
-      (m) => m.name === member.name
+      (m) => m.name.toLowerCase() === member.name.toLowerCase()
     );
+
     if (!initial) return null;
 
     return {
