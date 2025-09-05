@@ -183,7 +183,7 @@ const features = [
   {
     Icon: GearIcon,
     name: "Tools",
-    description: "Useful guild management and Tibia tools",
+    description: "Useful Tibia tools",
     href: "#",
     cta: "View Tools",
     className: "col-span-2 lg:col-span-1",
