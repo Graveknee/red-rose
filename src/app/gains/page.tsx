@@ -38,79 +38,67 @@ export default function GainsPage() {
     });
   }, []);
 
-  // Sort data by levels gained (descending)
   const sortedData = [...data].sort((a, b) => b.levelsGained - a.levelsGained);
 
-  // Group members by level gains
   const groupedByLevels = sortedData.reduce((acc, member) => {
     if (!acc[member.levelsGained]) acc[member.levelsGained] = [];
     acc[member.levelsGained].push(member);
     return acc;
   }, {} as Record<number, GainData[]>);
 
-  // Unique levels sorted desc
   const uniqueLevels = Object.keys(groupedByLevels)
     .map(Number)
     .sort((a, b) => b - a);
 
-  // Build podium (top 3 distinct level gains)
   const podium = uniqueLevels.slice(0, 3).map((level, idx) => ({
     rank: idx + 1,
     members: groupedByLevels[level],
     level,
   }));
 
-  // Remaining members (after podium levels)
-  const remainingGroups = uniqueLevels.slice(3).map((level) => ({
+  const allGroups = uniqueLevels.map((level) => ({
     level,
     members: groupedByLevels[level],
   }));
 
-  const getTrophyIcon = (rank: number) => {
+  const getTrophyIcon = (rank: number, size: "small" | "large" = "small") => {
+    const sizeClass = size === "small" ? "h-5 w-5" : "h-8 w-8";
     switch (rank) {
       case 1:
-        return <Trophy className="h-12 w-12 text-yellow-500" />;
+        return <Trophy className={`${sizeClass} text-yellow-500`} />;
       case 2:
-        return <Medal className="h-10 w-10 text-gray-400" />;
+        return <Medal className={`${sizeClass} text-gray-400`} />;
       case 3:
-        return <Award className="h-8 w-8 text-amber-600" />;
+        return <Award className={`${sizeClass} text-amber-600`} />;
       default:
         return null;
     }
   };
 
-  const getTrophyColor = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "from-yellow-400 to-yellow-600";
-      case 2:
-        return "from-gray-300 to-gray-500";
-      case 3:
-        return "from-amber-500 to-amber-700";
-      default:
-        return "from-gray-300 to-gray-500";
-    }
+  const getRankFromLevel = (level: number): number | null => {
+    const podiumEntry = podium.find(p => p.level === level);
+    return podiumEntry ? podiumEntry.rank : null;
   };
 
   const copyToClipboard = () => {
-    let text = "Weekly Highscore\n\n";
+    let text = "Weekly Experience Leaderboard\n\n";
 
-    if (podium.length > 0) {
-      text += "PODIUM FINISHERS\n";
-      podium.forEach(({ rank, members, level }) => {
-        const medal =
-          rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : "";
-        text += `${medal} (+${level} levels): ${members
-          .map((m) => m.name)
-          .join(", ")}\n`;
-      });
-      text += "\n";
-    }
+    // if (podium.length > 0) {
+    //   text += "PODIUM FINISHERS\n";
+    //   podium.forEach(({ rank, members, level }) => {
+    //     const medal =
+    //       rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : "";
+    //     text += `${medal} (+${level} levels): ${members
+    //       .map((m) => m.name)
+    //       .join(", ")}\n`;
+    //   });
+    //   text += "\n";
+    // }
 
-    if (remainingGroups.length > 0) {
-      text += "HONORABLE MENTIONS \n";
-      remainingGroups.forEach(({ level, members }) => {
-        text += `+${level} levels: ${members.map((m) => m.name).join(", ")}\n`;
+    if (allGroups.length > 0) {
+      text += "";
+      allGroups.forEach(({ level, members }, groupIndex) => {
+        text += `${groupIndex +1}. ${members.map((m) => m.name).join(", ")}: +${level} levels \n`;
       });
     }
 
@@ -128,10 +116,10 @@ export default function GainsPage() {
         <div className="absolute top-2/3 left-1/3 w-64 h-64 bg-gradient-to-r from-purple-200 to-blue-200 rounded-full blur-3xl animate-pulse delay-2000"></div>
       </div>
 
-      <div className="relative z-20 px-8 py-12">
+      <div className="relative z-20 px-4 sm:px-8 py-12">
         {/* Header */}
         <div
-          className="max-w-7xl mx-auto mb-12"
+          className="max-w-7xl mx-auto mb-8"
           style={{ transform: `translateY(${mousePosition.y * 0.05}px)` }}
         >
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
@@ -211,77 +199,44 @@ export default function GainsPage() {
             </div>
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto space-y-12">
-            {/* Podium */}
+          <div className="max-w-7xl mx-auto space-y-8">
+            {/* Compact Podium */}
             {podium.length > 0 && (
-              <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-rose-100/50">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-2">
-                    🏆 Champions Podium 🏆
+              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-lg border border-rose-100/50">
+                <div className="text-center mb-4">
+                  <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-yellow-600 to-yellow-800 bg-clip-text text-transparent mb-1">
+                    🏆 Top 3 This Week
                   </h2>
-                  <p className="text-gray-600">This week's top performers</p>
                 </div>
 
-                <div className="flex justify-center items-end gap-8 mb-8">
+                <div className="flex justify-center items-center gap-2 sm:gap-4">
                   {podium.map(({ rank, members, level }) => (
                     <div
                       key={rank}
-                      className="flex flex-col items-center"
+                      className="flex flex-col items-center text-center"
                     >
                       <div
-                        className={`bg-white rounded-2xl p-6 shadow-lg border-2 transform hover:scale-105 transition-all duration-300 ${
+                        className={`bg-white rounded-xl p-3 sm:p-4 shadow-md border transform hover:scale-105 transition-all duration-300 ${
                           rank === 1
-                            ? "border-yellow-300 p-8 border-4"
+                            ? "border-yellow-300 border-2"
                             : rank === 2
                             ? "border-gray-200"
                             : "border-amber-200"
                         }`}
                       >
-                        <div className="text-center">
-                          <div className="mb-4 flex justify-center relative">
-                            {getTrophyIcon(rank)}
-                            {rank === 1 && (
-                              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-yellow-800 font-bold text-sm">
-                                1
-                              </div>
-                            )}
-                          </div>
-                          {members.map((m) => (
-                            <div key={m.name} className="mb-2 border-b border-gray-200 pb-2">
-                              <h3 className="text-xl font-bold text-gray-800">
-                                {m.name}
-                              </h3>
-                            </div>
-                          ))}
-                          <div
-                            className={`inline-block px-4 py-2 rounded-full text-white font-semibold bg-gradient-to-r ${getTrophyColor(
-                              rank
-                            )} shadow-md`}
-                          >
-                            +{level} levels
-                          </div>
+                        <div className="mb-2 flex justify-center">
+                          {getTrophyIcon(rank)}
                         </div>
-                      </div>
-                      <div
-                        className={`w-24 ${
-                          rank === 1
-                            ? "h-24 bg-gradient-to-t from-yellow-400 to-yellow-300"
-                            : rank === 2
-                            ? "h-16 bg-gradient-to-t from-gray-300 to-gray-200"
-                            : "h-12 bg-gradient-to-t from-amber-500 to-amber-400"
-                        } mt-4 rounded-t-lg flex items-center justify-center`}
-                      >
-                        <span
-                          className={`font-bold ${
-                            rank === 1
-                              ? "text-yellow-800"
-                              : rank === 2
-                              ? "text-gray-700"
-                              : "text-amber-800"
-                          }`}
-                        >
-                          {rank}st
-                        </span>
+                        <div className="text-xs sm:text-sm font-semibold text-gray-800 mb-2 min-h-[2rem] flex items-center">
+                          {members.length === 1 ? (
+                            members[0].name
+                          ) : (
+                            `${members.length} tied`
+                          )}
+                        </div>
+                        <div className="text-xs font-medium text-gray-600">
+                          +{level} levels
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -289,32 +244,56 @@ export default function GainsPage() {
               </div>
             )}
 
-            {/* Remaining Members */}
-            {remainingGroups.length > 0 && (
-              <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-rose-100/50">
-                <div className="text-center mb-8">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    More Gamers
-                  </h2>
-                  <p className="text-gray-600">
-                    Everyone else who leveled up this week
-                  </p>
-                </div>
+            {/* Main List - All Members */}
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100/50">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                  Weekly Leaderboard
+                </h2>
+                <p className="text-gray-600">
+                  Everyone who leveled up this week
+                </p>
+              </div>
 
-                <div className="space-y-4">
-                  {remainingGroups.map(({ level, members }) => (
+              <div className="space-y-3">
+                {allGroups.map(({ level, members }) => {
+                  const rank = getRankFromLevel(level);
+                  const isPodium = rank !== null;
+                  
+                  return (
                     <div
                       key={level}
-                      className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100/30"
+                      className={`rounded-2xl p-4 sm:p-6 border transition-all duration-200 hover:shadow-md ${
+                        isPodium
+                          ? rank === 1
+                            ? "bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-200"
+                            : rank === 2
+                            ? "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-200"
+                            : "bg-gradient-to-r from-amber-50 to-amber-100 border-amber-200"
+                          : "bg-rose-50/50 border-rose-100/30"
+                      }`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                        <div className="flex-shrink-0">
-                          <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold rounded-full text-lg shadow-md">
+                        <div className="flex-shrink-0 flex items-center gap-3">
+                          {isPodium && rank !== null && (
+                            <div className="flex items-center">
+                              {getTrophyIcon(rank, "small")}
+                            </div>
+                          )}
+                          <span className={`inline-block px-4 py-2 font-semibold rounded-full text-sm sm:text-base shadow-sm ${
+                            isPodium
+                              ? rank === 1
+                                ? "bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900"
+                                : rank === 2
+                                ? "bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800"
+                                : "bg-gradient-to-r from-amber-400 to-amber-500 text-amber-900"
+                              : "bg-gradient-to-r from-rose-500 to-pink-600 text-white"
+                          }`}>
                             +{level} levels
                           </span>
                         </div>
                         <div className="flex-1">
-                          <p className="text-gray-700 font-medium text-lg leading-relaxed">
+                          <p className="text-gray-700 font-medium text-base sm:text-lg leading-relaxed">
                             {members.map((m) => m.name).join(", ")}
                           </p>
                         </div>
@@ -323,10 +302,10 @@ export default function GainsPage() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
