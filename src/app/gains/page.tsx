@@ -142,7 +142,7 @@ const getTrophyIcon = (rank: number, size: "small" | "large" = "small") => {
 
               <div>
                 <h1 className="text-4xl md:text-5xl font-serif font-black bg-gradient-to-r from-rose-600 via-rose-800 to-pink-600 bg-clip-text text-transparent mb-6 pb-2 leading-[1.1]">
-                  Weekly Leaderboard
+                  Top Weekly
                 </h1>
                 <div className="h-1 w-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full shadow-sm"></div>
               </div>

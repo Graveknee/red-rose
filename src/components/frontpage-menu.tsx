@@ -1,4 +1,5 @@
-import { CalendarIcon, ChatBubbleIcon, ClockIcon, PersonIcon, ReaderIcon, StarIcon } from "@radix-ui/react-icons"
+import { CalendarIcon, ChatBubbleIcon, ClockIcon, GearIcon, PersonIcon, ReaderIcon, StarIcon } from "@radix-ui/react-icons"
+import { TrophyIcon } from "lucide-react"
 import { BentoCard, BentoGrid } from "@/components/bento-grid"
 import { Marquee } from "@/components/marquee"
 import { Calendar } from "@/components/ui/calendar"
@@ -37,7 +38,7 @@ const features = [
     Icon: CalendarIcon,
     name: "Events",
     description: "Track upcoming events",
-    className: "col-span-3 lg:col-span-1",
+    className: "col-span-2 lg:col-span-1",
     href: "#",
     cta: "View Events",
     background: (
@@ -54,7 +55,7 @@ const features = [
     description: "Browse the history of Red Rose",
     href: "#",
     cta: "View Timeline",
-    className: "col-span-3 lg:col-span-2",
+    className: "col-span-2 lg:col-span-2",
     background: (
       <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105">
         <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out group-hover:scale-105 opacity-20">
@@ -73,15 +74,6 @@ const features = [
             </div>
           </div>
         </div>
-        {/* <div
-          className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105 rounded-lg opacity-80"
-          style={{
-            backgroundImage: 'url(/old_rr_screenshot.PNG)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-          aria-label="Red Rose Timeline"
-        /> */}
       </div>
     ),
   },
@@ -91,7 +83,7 @@ const features = [
     description: "View guild members, their vocations, and current status",
     href: "/roster",
     cta: "View Roster",
-    className: "col-span-3 lg:col-span-2",
+    className: "col-span-2 lg:col-span-2",
     background: (
       <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-90">
         <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out group-hover:scale-90 opacity-20">
@@ -113,15 +105,6 @@ const features = [
             </div>
           </div>
         </div>
-        {/* <div
-          className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-90 rounded-lg opacity-80"
-          style={{
-            backgroundImage: 'url(/tibia_vocations.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-          aria-label="Guild Roster"
-        /> */}
       </div>
     ),
   },
@@ -131,7 +114,7 @@ const features = [
     description: "Read our codex",
     href: "https://www.redrose-guild.com/viewtopic.php?t=61&sid=77e793602bfe2fcbea1791cd7739464f",
     cta: "Read More",
-    className: "col-span-3 lg:col-span-1",
+    className: "col-span-2 lg:col-span-1",
     background: (
       <div className="absolute inset-0 flex items-center justify-center opacity-20">
         <div className="text-center space-y-4 p-8">
@@ -158,7 +141,7 @@ const features = [
     description: "Track members high scores",
     href: "/highscores",
     cta: "View Rankings",
-    className: "col-span-3 lg:col-span-1",
+    className: "col-span-2 lg:col-span-1",
     background: (
       <Marquee
         pauseOnHover
@@ -187,12 +170,53 @@ const features = [
     ),
   },
   {
+    Icon: TrophyIcon,
+    name: "Weekly Leaderboards",
+    description: "See this week's top level gainers",
+    href: "/gains",
+    cta: "View Leaderboard",
+    className: "col-span-2 lg:col-span-1",
+    background: (
+<div></div>
+    ),
+  },
+  {
+    Icon: GearIcon,
+    name: "Tools",
+    description: "Useful guild management and Tibia tools",
+    href: "#",
+    cta: "View Tools",
+    className: "col-span-2 lg:col-span-1",
+    background: (
+      <div className="absolute inset-0 flex items-center justify-center opacity-20">
+        <div className="grid grid-cols-2 gap-3 p-6 w-full max-w-sm">
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-primary/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-3/4"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-blue-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-2/3"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-amber-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-4/5"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-green-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    ),
+  },
+  {
     Icon: ChatBubbleIcon,
     name: "Forums",
     description: "Join discussions, connect with members and apply to the guild",
     href: "https://redrose-guild.com/",
     cta: "Visit Forums",
-    className: "col-span-3 lg:col-span-2",
+    className: "col-span-4 lg:col-span-2",
     background: (
       <div className="absolute inset-0 flex items-center justify-center opacity-30">
         <div className="grid grid-cols-2 gap-4 p-6 w-full">
