@@ -171,8 +171,8 @@ const features = [
   },
   {
     Icon: TrophyIcon,
-    name: "Weekly Leaderboards",
-    description: "See this week's top level gainers",
+    name: "Weekly Leaderboard",
+    description: "This week's top levelers",
     href: "/gains",
     cta: "View Leaderboard",
     className: "col-span-2 lg:col-span-1",
@@ -213,7 +213,7 @@ const features = [
   {
     Icon: ChatBubbleIcon,
     name: "Forums",
-    description: "Join discussions, connect with members and apply to the guild",
+    description: "Join the discussions on our forum",
     href: "https://redrose-guild.com/",
     cta: "Visit Forums",
     className: "col-span-4 lg:col-span-2",
