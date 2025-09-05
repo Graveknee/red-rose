@@ -42,6 +42,22 @@ export default function GainsPage() {
     });
   }, []);
 
+  useEffect(() => {
+  setLoading(true);
+
+  if (selectedWeek === "current") {
+    getLevelsSinceLastFriday(guildName).then((res) => {
+      setData(res);
+      setLoading(false);
+    });
+  } else {
+    getLevelsSinceLastFriday(guildName, selectedWeek).then((res) => {
+      setData(res);
+      setLoading(false);
+    });
+  }
+}, [selectedWeek]);
+
   const sortedData = [...data].sort((a, b) => b.levelsGained - a.levelsGained);
 
   const groupedByLevels = sortedData.reduce((acc, member) => {

@@ -105,11 +105,12 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
     const endSnapshot = await prisma.guildSnapShot.findFirst({
       where: {
         guildName,
-        date: { 
-          gte: endFriday,
+        date: {
+          gte: startFriday,
+          lte: endFriday,
         },
       },
-      orderBy: { date: "asc" },
+      orderBy: { date: "desc" },
     });
 
     if (!endSnapshot) {
