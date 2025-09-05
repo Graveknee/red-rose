@@ -57,23 +57,13 @@ const features = [
     cta: "View Timeline",
     className: "col-span-2 lg:col-span-2",
     background: (
-      <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105">
-        <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out group-hover:scale-105 opacity-20">
-          <div className="space-y-4 p-18">
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
-              <div className="h-2 bg-rose-300 rounded w-32"></div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-pink-600 rounded-full"></div>
-              <div className="h-2 bg-pink-300 rounded w-40"></div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="w-3 h-3 bg-rose-600 rounded-full"></div>
-              <div className="h-2 bg-rose-300 rounded w-28"></div>
-            </div>
-          </div>
-        </div>
+      <div className="absolute inset-0 transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-110">
+        <div 
+          className="w-full h-full bg-cover bg-center filter sepia-[0.3] hue-rotate-[315deg] saturate-150"
+          style={{
+            backgroundImage: 'url("/old_rr_screenshot.PNG")',
+          }} 
+        />
       </div>
     ),
   },
@@ -85,26 +75,13 @@ const features = [
     cta: "View Roster",
     className: "col-span-2 lg:col-span-2",
     background: (
-      <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-90">
-        <div className="absolute right-2 top-4 h-[300px] w-full transition-all duration-300 ease-out group-hover:scale-90 opacity-20">
-          <div className="grid grid-cols-3 gap-2 p-4">
-            <div className="bg-rose-100 rounded-lg p-2 text-center">
-              <div className="w-8 h-8 bg-rose-300 rounded-full mx-auto mb-1"></div>
-              <div className="h-1 bg-rose-400 rounded w-full mb-1"></div>
-              <div className="h-1 bg-rose-300 rounded w-2/3 mx-auto"></div>
-            </div>
-            <div className="bg-pink-100 rounded-lg p-2 text-center">
-              <div className="w-8 h-8 bg-pink-300 rounded-full mx-auto mb-1"></div>
-              <div className="h-1 bg-pink-400 rounded w-full mb-1"></div>
-              <div className="h-1 bg-pink-300 rounded w-2/3 mx-auto"></div>
-            </div>
-            <div className="bg-rose-100 rounded-lg p-2 text-center">
-              <div className="w-8 h-8 bg-rose-300 rounded-full mx-auto mb-1"></div>
-              <div className="h-1 bg-rose-400 rounded w-full mb-1"></div>
-              <div className="h-1 bg-rose-300 rounded w-2/3 mx-auto"></div>
-            </div>
-          </div>
-        </div>
+      <div className="absolute inset-0 transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-110">
+        <div 
+          className="w-full h-full bg-center filter sepia-[0.3]"
+          style={{
+            backgroundImage: 'url("/vocations.png")',
+          }} 
+        />
       </div>
     ),
   },
@@ -116,22 +93,13 @@ const features = [
     cta: "Read More",
     className: "col-span-2 lg:col-span-1",
     background: (
-      <div className="absolute inset-0 flex items-center justify-center opacity-20">
-        <div className="text-center space-y-4 p-8">
-          <div
-            className="mx-auto mb-4"
-            style={{
-              width: 50,
-              height: 50,
-              backgroundImage: 'url(./public/Red_Rose.gif)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              borderRadius: '8px',
-            }}
-          />          
-          <div className="text-sm text-muted-foreground max-w-md">
-          </div>
-        </div>
+      <div className="absolute inset-0 transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-70">
+        <div
+          className="w-full opacity-40 h-full bg-cover bg-center filter sepia-[0.3]"
+          style={{
+            backgroundImage: 'url("/Red_Rose.gif")',
+          }} 
+        />
       </div>
     ),
   },
@@ -141,7 +109,7 @@ const features = [
     description: "Track members high scores",
     href: "/highscores",
     cta: "View Rankings",
-    className: "col-span-2 lg:col-span-1",
+    className: "col-span-2 lg:col-span-2",
     background: (
       <Marquee
         pauseOnHover
@@ -181,36 +149,6 @@ const features = [
     ),
   },
   {
-    Icon: GearIcon,
-    name: "Tools",
-    description: "Useful Tibia tools",
-    href: "#",
-    cta: "View Tools",
-    className: "col-span-2 lg:col-span-1",
-    background: (
-      <div className="absolute inset-0 flex items-center justify-center opacity-20">
-        <div className="grid grid-cols-2 gap-3 p-6 w-full max-w-sm">
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
-            <div className="w-6 h-6 bg-primary/60 rounded-md"></div>
-            <div className="h-1 bg-muted-foreground/40 rounded w-3/4"></div>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
-            <div className="w-6 h-6 bg-blue-500/60 rounded-md"></div>
-            <div className="h-1 bg-muted-foreground/40 rounded w-2/3"></div>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
-            <div className="w-6 h-6 bg-amber-500/60 rounded-md"></div>
-            <div className="h-1 bg-muted-foreground/40 rounded w-4/5"></div>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
-            <div className="w-6 h-6 bg-green-500/60 rounded-md"></div>
-            <div className="h-1 bg-muted-foreground/40 rounded w-1/2"></div>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
     Icon: ChatBubbleIcon,
     name: "Forums",
     description: "Join the discussions on our forum",
@@ -242,6 +180,36 @@ const features = [
       </div>
     ),
   },
+    {
+    Icon: GearIcon,
+    name: "Tools",
+    description: "Useful Tibia tools",
+    href: "#",
+    cta: "View Tools",
+    className: "col-span-2 lg:col-span-1",
+    background: (
+      <div className="absolute inset-0 flex items-center justify-center opacity-20">
+        <div className="grid grid-cols-2 gap-3 p-6 w-full max-w-sm">
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-primary/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-3/4"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-blue-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-2/3"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-amber-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-4/5"></div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-3 space-y-2 aspect-square flex flex-col justify-center items-center">
+            <div className="w-6 h-6 bg-green-500/60 rounded-md"></div>
+            <div className="h-1 bg-muted-foreground/40 rounded w-1/2"></div>
+          </div>
+        </div>
+      </div>
+    ),
+  }
 ]
 
 export default function FrontpageMenu() {
