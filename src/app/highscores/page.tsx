@@ -1,7 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import { ArrowLeft, Axe, BowArrow, Fish, Hammer, HandFist, RefreshCw, Shield, Sword, Trophy, Users, Zap } from "lucide-react";
+import { ArrowLeft, Axe, BowArrow, Fish, Hammer, HandFist, RefreshCw, Shield, Star, Sword, Trophy, Users, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useGuildData } from "@/hooks/use-guild-data";
@@ -37,6 +37,8 @@ const categories: Category[] = [
   { key: "fist", label: "Fist Fighting", icon: HandFist, color: "orange" },
   { key: "fishing", label: "Fishing", icon: Fish, color: "teal" },
   { key: "achievements", label: "Achievements", icon: Trophy, color: "pink" },
+  { key: "charmpoints", label: "Charm Points", icon: Star, color: "indigo" },
+  { key: "bosspoints", label: "Boss Points", icon: Trophy, color: "yellow" }
 ];
 
 const vocations: Vocation[] = [
