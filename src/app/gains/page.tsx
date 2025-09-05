@@ -1,9 +1,11 @@
+/** biome-ignore-all lint/performance/noImgElement: <screw you> */
 "use client";
 
-import { ArrowLeft, Award, ChevronDown, Copy, Medal, Trophy } from "lucide-react";
+import { ArrowLeft, ChevronDown, Copy, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getLevelsSinceLastFriday } from "@/app/actions/get-levels-since-last-friday";
+import { getAvailableWeeks, getLevelsSinceLastFriday, type WeekOption } from "@/app/actions/get-levels-since-last-friday";
+
 
 interface GainData {
   name: string;
@@ -18,6 +20,7 @@ export default function GainsPage() {
   const [loading, setLoading] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedWeek, setSelectedWeek] = useState("current");
+  const [availableWeeks, setAvailableWeeks] = useState<WeekOption[]>([]);
   const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
@@ -34,6 +37,7 @@ export default function GainsPage() {
   useEffect(() => {
     getLevelsSinceLastFriday(guildName).then((res) => {
       setData(res);
+      getAvailableWeeks(guildName).then(setAvailableWeeks);
       setLoading(false);
     });
   }, []);
@@ -61,19 +65,20 @@ export default function GainsPage() {
     members: groupedByLevels[level],
   }));
 
-  const getTrophyIcon = (rank: number, size: "small" | "large" = "small") => {
-    const sizeClass = size === "small" ? "h-5 w-5" : "h-8 w-8";
+const getTrophyIcon = (rank: number, size: "small" | "large" = "small") => {
+  const sizeClass = size === "small" ? "h-8 w-8" : "h-12 w-12";
+
     switch (rank) {
       case 1:
-        return <Trophy className={`${sizeClass} text-yellow-500`} />;
+        return <img src="/Golden_Goblet.gif" alt="Gold Trophy" className={`${sizeClass} object-contain`} />;
       case 2:
-        return <Medal className={`${sizeClass} text-gray-400`} />;
+        return <img src="/Silver_Goblet.gif" alt="Silver Trophy" className={`${sizeClass} object-contain`} />;
       case 3:
-        return <Award className={`${sizeClass} text-amber-600`} />;
+        return <img src="/Bronze_Goblet.gif" alt="Bronze Trophy" className={`${sizeClass} object-contain`} />;
       default:
         return null;
-    }
-  };
+  }
+};
 
   const getRankFromLevel = (level: number): number | null => {
     const podiumEntry = podium.find(p => p.level === level);
@@ -137,7 +142,7 @@ export default function GainsPage() {
 
               <div>
                 <h1 className="text-4xl md:text-5xl font-serif font-black bg-gradient-to-r from-rose-600 via-rose-800 to-pink-600 bg-clip-text text-transparent mb-6 pb-2 leading-[1.1]">
-                  Weekly Gains
+                  Weekly Leaderboard
                 </h1>
                 <div className="h-1 w-16 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full shadow-sm"></div>
               </div>
@@ -152,6 +157,11 @@ export default function GainsPage() {
                   className="appearance-none bg-white/80 backdrop-blur-sm border border-rose-100/50 rounded-2xl px-6 py-3 pr-10 shadow-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all"
                 >
                   <option value="current">Current Week</option>
+                  {availableWeeks.map((week) => (
+                    <option key={week.value} value={week.value}>
+                      {week.label}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-rose-600 pointer-events-none" />
               </div>
@@ -216,7 +226,7 @@ export default function GainsPage() {
                       className="flex flex-col items-center text-center"
                     >
                       <div
-                        className={`bg-white rounded-xl p-3 sm:p-4 shadow-md border transform hover:scale-105 transition-all duration-300 ${
+                        className={`bg-white rounded-xl p-3 sm:p-4 shadow-md border hover:shadow-lg transition-all duration-300 ${
                           rank === 1
                             ? "border-yellow-300 border-2"
                             : rank === 2
