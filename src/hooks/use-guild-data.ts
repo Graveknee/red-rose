@@ -34,7 +34,7 @@ interface CachedData {
 
 const CACHE_KEY = "red-rose-highscores";
 const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; 
-const GUILD_MEMBER_LIMIT = 50;
+const GUILD_MEMBER_LIMIT = 200;
 const HIGHSCORE_MEMBER_LIMIT = 5;
 
 export function useGuildData() {
