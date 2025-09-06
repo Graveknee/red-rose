@@ -56,6 +56,8 @@ export function useGuildData() {
     { key: "fist", label: "Fist Fighting" },
     { key: "fishing", label: "Fishing" },
     { key: "achievements", label: "Achievements" },
+    { key: "charmpoints", label: "Charm Points" },
+    { key: "bosspoints", label: "Boss Points" }
   ];
 
   function isCacheValid(cachedData: CachedData) {
