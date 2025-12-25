@@ -57,7 +57,9 @@ export function useGuildData() {
     { key: "fishing", label: "Fishing" },
     { key: "achievements", label: "Achievements" },
     { key: "charmpoints", label: "Charm Points" },
-    { key: "bosspoints", label: "Boss Points" }
+    { key: "bosspoints", label: "Boss Points" },
+    { key: "bountypoints", label: "Bounty Points"},
+    { key: "weeklytasks", label: "Weekly Tasks" }
   ];
 
   function isCacheValid(cachedData: CachedData) {

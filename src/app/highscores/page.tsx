@@ -38,7 +38,9 @@ const categories: Category[] = [
   { key: "fishing", label: "Fishing", icon: Fish, color: "teal" },
   { key: "achievements", label: "Achievements", icon: Trophy, color: "pink" },
   { key: "charmpoints", label: "Charm Points", icon: Star, color: "indigo" },
-  { key: "bosspoints", label: "Boss Points", icon: Trophy, color: "yellow" }
+  { key: "bosspoints", label: "Boss Points", icon: Trophy, color: "yellow" },
+  { key: "bountypoints", label: "Bounty Points", icon: Star, color: "red" },
+  { key: "weeklytasks", label: "Weekly Tasks", icon: Star, color: "gray" }
 ];
 
 const vocations: Vocation[] = [
