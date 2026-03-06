@@ -23,23 +23,23 @@ export async function getAvailableWeeks(guildName: string): Promise<WeekOption[]
   if (snapshots.length < 2) return [];
 
   const weeks: WeekOption[] = [];
-  
+
   for (let i = 1; i < snapshots.length; i++) {
     const endSnapshot = snapshots[i - 1];
     const startSnapshot = snapshots[i];
-    
+
     const endFriday = getLastFriday(endSnapshot.date);
     const startFriday = getLastFriday(startSnapshot.date);
-    
+
     const daysDiff = Math.floor((endFriday.getTime() - startFriday.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysDiff >= 6) {
+    if (daysDiff >= 13) {
       const weekStart = new Date(startFriday);
       const weekEnd = new Date(startFriday);
-      weekEnd.setDate(weekEnd.getDate() + 6);
-      
+      weekEnd.setDate(weekEnd.getDate() + 13);
+
       const weekValue = `${startFriday.toISOString().split('T')[0]}`;
       const weekLabel = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
-      
+
       weeks.push({
         value: weekValue,
         label: weekLabel,
@@ -62,9 +62,9 @@ function getLastFriday(date: Date): Date {
 }
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-US', { 
-    month: 'short', 
-    day: 'numeric' 
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -75,15 +75,21 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
   if (weekStartDate) {
     startFriday = new Date(weekStartDate + 'T10:00:00.000Z');
     endFriday = new Date(startFriday);
-    endFriday.setDate(endFriday.getDate() + 7);
+    endFriday.setDate(endFriday.getDate() + 14);
   } else {
     const now = new Date();
     const day = now.getUTCDay();
     const diff = (day >= 5 ? day - 5 : 7 - (5 - day));
-    startFriday = new Date(now);
-    startFriday.setUTCDate(now.getUTCDate() - diff);
-    startFriday.setUTCHours(10, 0, 0, 0);
-    endFriday = new Date(); 
+    const lastFriday = new Date(now);
+    lastFriday.setUTCDate(now.getUTCDate() - diff);
+    lastFriday.setUTCHours(10, 0, 0, 0);
+
+    const weeksSinceEpoch = Math.floor(lastFriday.getTime() / (1000 * 60 * 60 * 24 * 7));
+    const isOddWeek = weeksSinceEpoch % 2 !== 0;
+    startFriday = new Date(lastFriday);
+    if (isOddWeek) startFriday.setDate(startFriday.getDate() - 7);
+
+    endFriday = new Date();
   }
 
   const startSnapshot = await prisma.guildSnapShot.findFirst({
@@ -101,7 +107,6 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
   let endMembers: GuildMember[];
 
   if (weekStartDate) {
-    // Historical week - use snapshot
     const endSnapshot = await prisma.guildSnapShot.findFirst({
       where: {
         guildName,
@@ -114,12 +119,11 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
     });
 
     if (!endSnapshot) {
-      throw new Error(`No end snapshot found for week ending ${endFriday.toISOString()}`);
+      throw new Error(`No end snapshot found for period ending ${endFriday.toISOString()}`);
     }
 
     endMembers = endSnapshot.members as unknown as GuildMember[];
   } else {
-    // Current week - fetch live data
     const url = `https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`;
     console.log("Fetching current guild data from:", url);
 
