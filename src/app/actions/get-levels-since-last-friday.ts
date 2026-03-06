@@ -13,7 +13,7 @@ export interface WeekOption {
   endDate: Date;
 }
 
-export async function getAvailableWeeks(guildName: string): Promise<WeekOption[]> {
+export async function getAvailableWeeks(guildName: string, mode: "biweekly" | "weekly" = "biweekly"): Promise<WeekOption[]> {
   const snapshots = await prisma.guildSnapShot.findMany({
     where: { guildName },
     orderBy: { date: "desc" },
@@ -22,6 +22,7 @@ export async function getAvailableWeeks(guildName: string): Promise<WeekOption[]
 
   if (snapshots.length < 2) return [];
 
+  const minDays = mode === "biweekly" ? 13 : 6;
   const weeks: WeekOption[] = [];
 
   for (let i = 1; i < snapshots.length; i++) {
@@ -32,17 +33,14 @@ export async function getAvailableWeeks(guildName: string): Promise<WeekOption[]
     const startFriday = getLastFriday(startSnapshot.date);
 
     const daysDiff = Math.floor((endFriday.getTime() - startFriday.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysDiff >= 13) {
+    if (daysDiff >= minDays) {
       const weekStart = new Date(startFriday);
       const weekEnd = new Date(startFriday);
-      weekEnd.setDate(weekEnd.getDate() + 13);
-
-      const weekValue = `${startFriday.toISOString().split('T')[0]}`;
-      const weekLabel = `${formatDate(weekStart)} - ${formatDate(weekEnd)}`;
+      weekEnd.setDate(weekEnd.getDate() + daysDiff);
 
       weeks.push({
-        value: weekValue,
-        label: weekLabel,
+        value: startFriday.toISOString().split('T')[0],
+        label: `${formatDate(weekStart)} - ${formatDate(weekEnd)}`,
         startDate: weekStart,
         endDate: weekEnd,
       });
@@ -68,14 +66,19 @@ function formatDate(date: Date): string {
   });
 }
 
-export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?: string) {
+export async function getLevelsSinceLastFriday(
+  guildName: string,
+  weekStartDate?: string,
+  mode: "biweekly" | "weekly" = "biweekly"
+) {
+  const windowDays = mode === "weekly" ? 7 : 14;
   let startFriday: Date;
   let endFriday: Date;
 
   if (weekStartDate) {
     startFriday = new Date(weekStartDate + 'T10:00:00.000Z');
     endFriday = new Date(startFriday);
-    endFriday.setDate(endFriday.getDate() + 14);
+    endFriday.setDate(endFriday.getDate() + windowDays);
   } else {
     const now = new Date();
     const day = now.getUTCDay();
@@ -84,10 +87,14 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
     lastFriday.setUTCDate(now.getUTCDate() - diff);
     lastFriday.setUTCHours(10, 0, 0, 0);
 
-    const weeksSinceEpoch = Math.floor(lastFriday.getTime() / (1000 * 60 * 60 * 24 * 7));
-    const isOddWeek = weeksSinceEpoch % 2 !== 0;
-    startFriday = new Date(lastFriday);
-    if (isOddWeek) startFriday.setDate(startFriday.getDate() - 7);
+    if (mode === "biweekly") {
+      const weeksSinceEpoch = Math.floor(lastFriday.getTime() / (1000 * 60 * 60 * 24 * 7));
+      const isEvenWeek = weeksSinceEpoch % 2 === 0;
+      startFriday = new Date(lastFriday);
+      if (isEvenWeek) startFriday.setDate(startFriday.getDate() - 7);
+    } else {
+      startFriday = lastFriday;
+    }
 
     endFriday = new Date();
   }
@@ -143,14 +150,12 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
 
   const startMembers = startSnapshot.members as unknown as GuildMember[];
 
-  const levelsGained = endMembers
+  return endMembers
     .map((member: GuildMember) => {
       const initial = startMembers.find(
         (m) => m.name.toLowerCase() === member.name.toLowerCase()
       );
-
       if (!initial) return null;
-
       return {
         name: member.name,
         levelsGained: member.level - initial.level,
@@ -159,6 +164,4 @@ export async function getLevelsSinceLastFriday(guildName: string, weekStartDate?
     .filter((m): m is { name: string; levelsGained: number } => m !== null)
     .filter((m) => m.levelsGained !== 0)
     .sort((a, b) => b.levelsGained - a.levelsGained);
-
-  return levelsGained;
 }
