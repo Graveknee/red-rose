@@ -13,6 +13,9 @@ interface GainData {
 
 type Mode = "biweekly" | "weekly";
 
+const formatDisplayDate = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
 export default function GainsPage() {
   const router = useRouter();
   const guildName = "Red Rose";
@@ -24,6 +27,8 @@ export default function GainsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("current");
   const [availablePeriods, setAvailablePeriods] = useState<WeekOption[]>([]);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [startDate, setStartDate] = useState<string | null>(null);
+
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -49,7 +54,8 @@ export default function GainsPage() {
     setLoading(true);
     const weekStart = selectedPeriod === "current" ? undefined : selectedPeriod;
     getLevelsSinceLastFriday(guildName, weekStart, mode).then((res) => {
-      setData(res);
+      setData(res.levels);
+      setStartDate(res.startDate);
       setLoading(false);
     });
   }, [selectedPeriod, mode]);
@@ -250,15 +256,21 @@ export default function GainsPage() {
             {/* Main List */}
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-xl border border-rose-100/50">
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-                  {isBiweekly ? "Biweekly Leaderboard" : "Weekly Leaderboard"}
-                </h2>
-                <p className="text-gray-600">
-                  {selectedPeriod === "current"
-                    ? `Everyone who leveled up ${isBiweekly ? "this fortnight" : "this week"}`
-                    : `Everyone who leveled up — ${getSelectedLabel()}`}
-                </p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
+                {isBiweekly ? "Biweekly Leaderboard" : "Weekly Leaderboard"}
+              </h2>
+              <p className="text-gray-600 mb-3">
+                {selectedPeriod === "current"
+                  ? `Everyone who leveled up ${isBiweekly ? "this fortnight" : "this week"}`
+                  : `Everyone who leveled up — ${getSelectedLabel()}`}
+              </p>
+              <div className="inline-flex items-center gap-2 bg-rose-50 border border-rose-100 rounded-full px-4 py-1.5 text-sm text-rose-600 font-medium">
+                <span>📅</span>
+                <span>
+                  {startDate ? `Since ${formatDisplayDate(startDate)}` : getSelectedLabel()}
+                </span>
               </div>
+            </div>
 
               <div className="space-y-3">
                 {allGroups.map(({ level, members }) => {

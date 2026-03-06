@@ -150,18 +150,21 @@ export async function getLevelsSinceLastFriday(
 
   const startMembers = startSnapshot.members as unknown as GuildMember[];
 
-  return endMembers
-    .map((member: GuildMember) => {
-      const initial = startMembers.find(
-        (m) => m.name.toLowerCase() === member.name.toLowerCase()
-      );
-      if (!initial) return null;
-      return {
-        name: member.name,
-        levelsGained: member.level - initial.level,
-      };
-    })
-    .filter((m): m is { name: string; levelsGained: number } => m !== null)
-    .filter((m) => m.levelsGained !== 0)
-    .sort((a, b) => b.levelsGained - a.levelsGained);
+  return {
+    startDate: startSnapshot.date.toISOString(),
+    levels: endMembers
+      .map((member: GuildMember) => {
+        const initial = startMembers.find(
+          (m) => m.name.toLowerCase() === member.name.toLowerCase()
+        );
+        if (!initial) return null;
+        return {
+          name: member.name,
+          levelsGained: member.level - initial.level,
+        };
+      })
+      .filter((m): m is { name: string; levelsGained: number } => m !== null)
+      .filter((m) => m.levelsGained !== 0)
+      .sort((a, b) => b.levelsGained - a.levelsGained),
+  };
 }
