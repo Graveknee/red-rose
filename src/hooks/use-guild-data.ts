@@ -33,7 +33,7 @@ interface CachedData {
 }
 
 const CACHE_KEY = "red-rose-highscores";
-const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000; 
+const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000;
 const GUILD_MEMBER_LIMIT = 200;
 const HIGHSCORE_MEMBER_LIMIT = 5;
 
@@ -58,8 +58,8 @@ export function useGuildData() {
     { key: "achievements", label: "Achievements" },
     { key: "charmpoints", label: "Charm Points" },
     { key: "bosspoints", label: "Boss Points" },
-    { key: "bountypoints", label: "Bounty Points"},
-    { key: "weeklytasks", label: "Weekly Tasks" }
+    { key: "bountypoints", label: "Bounty Points" },
+    { key: "weeklytasks", label: "Weekly Tasks" },
   ];
 
   function isCacheValid(cachedData: CachedData) {
@@ -67,18 +67,13 @@ export function useGuildData() {
   }
 
   const loadFromCache = useCallback((): CachedData | null => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-    
+    if (typeof window === 'undefined') return null;
     try {
       const cached = localStorage.getItem(CACHE_KEY);
       if (cached) {
         const data: CachedData = JSON.parse(cached);
-        if (isCacheValid(data)) {
-          return data;
-        } 
-      } 
+        if (isCacheValid(data)) return data;
+      }
     } catch (error) {
       console.error('Error loading cache:', error);
     }
@@ -87,12 +82,11 @@ export function useGuildData() {
 
   const saveToCache = useCallback((categoryData: CategoryData, characterInfo: CharacterBasicInfo[]) => {
     if (typeof window === 'undefined') return;
-    
     try {
       const cacheData: CachedData = {
         timestamp: Date.now(),
         categoryData,
-        characterInfo
+        characterInfo,
       };
       localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
     } catch (error) {
@@ -119,84 +113,81 @@ export function useGuildData() {
 
       const members: GuildMember[] = guildData.guild?.members || [];
       const memberNames = new Set<string>(members.map((m: GuildMember) => String(m.name)));
-      
+
       setGuildMembers(memberNames);
-      setLoadingProgress('Fetching character info...');
+      setLoadingProgress('Fetching highscores');
 
-      const charInfoPromises = members.slice(0, GUILD_MEMBER_LIMIT).map(async (member: GuildMember) => {
-        try {
-          const charRes = await fetch(
-            `https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`
-          );
-          const charData = await charRes.json();
-          const charInfo = charData.character?.character;
-          
-          if (charInfo) {
-            return {
-              name: charInfo.name,
-              vocation: charInfo.vocation,
-              level: charInfo.level || 0
-            };
+      const charInfoPromise = Promise.all(
+        members.slice(0, GUILD_MEMBER_LIMIT).map(async (member: GuildMember) => {
+          try {
+            const charRes = await fetch(
+              `https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`
+            );
+            const charData = await charRes.json();
+            const charInfo = charData.character?.character;
+            if (charInfo) {
+              return {
+                name: charInfo.name,
+                vocation: charInfo.vocation,
+                level: charInfo.level || 0,
+              };
+            }
+          } catch {
+            console.log(`Failed to fetch character: ${member.name}`);
           }
-        } catch {
-          console.log(`Failed to fetch character: ${member.name}`);
-        }
-        return null;
-      });
+          return null;
+        })
+      ).then(results => results.filter(Boolean) as CharacterBasicInfo[]);
 
-      const resolvedCharInfo = (await Promise.all(charInfoPromises)).filter(Boolean) as CharacterBasicInfo[];
-      setCharacterInfo(resolvedCharInfo);
-
-      const newCategoryData: CategoryData = {};
-      
-      for (let i = 0; i < categories.length; i++) {
-        const category = categories[i];
-        setLoadingProgress(`Fetching ${category.label} highscores... (${i + 1}/${categories.length})`);
-        
+      const fetchCategoryHighscores = async (
+        category: { key: string; label: string }
+      ): Promise<[string, HighscoreEntry[]]> => {
         try {
           const allHighscores: HighscoreEntry[] = [];
           let currentPage = 1;
           let hasMorePages = true;
           let guildMembersFound = 0;
-          
+
           while (hasMorePages && currentPage <= 20 && guildMembersFound < HIGHSCORE_MEMBER_LIMIT) {
             const hsRes = await fetch(
               `https://api.tibiadata.com/v4/highscores/Antica/${category.key}/all/${currentPage}`
             );
             const hsData = await hsRes.json();
-            
-            if (hsData.highscores?.highscore_list && hsData.highscores.highscore_list.length > 0) {
+
+            if (hsData.highscores?.highscore_list?.length > 0) {
               allHighscores.push(...hsData.highscores.highscore_list);
-              
-              guildMembersFound = allHighscores.filter(entry => 
-                memberNames.has(entry.name)
-              ).length;
-              
+              guildMembersFound = allHighscores.filter(entry => memberNames.has(entry.name)).length;
               const totalPages = hsData.highscores.highscore_page?.total_pages || 1;
               hasMorePages = currentPage < totalPages;
               currentPage++;
             } else {
               hasMorePages = false;
             }
-            
-            await new Promise(resolve => setTimeout(resolve, 25));
           }
-          
+
           const guildHighscores = allHighscores
             .filter(entry => memberNames.has(entry.name))
             .slice(0, HIGHSCORE_MEMBER_LIMIT);
-          
-          newCategoryData[category.key] = guildHighscores;          
+
+          return [category.key, guildHighscores];
         } catch (err) {
           console.error(`Error fetching ${category.label}:`, err);
-          newCategoryData[category.key] = [];
+          return [category.key, []];
         }
-      }
+      };
 
+      const highscoresPromise = Promise.all(categories.map(fetchCategoryHighscores))
+        .then(results => Object.fromEntries(results));
+
+      const [resolvedCharInfo, newCategoryData] = await Promise.all([
+        charInfoPromise,
+        highscoresPromise,
+      ]);
+
+      setCharacterInfo(resolvedCharInfo);
       setCategoryData(newCategoryData);
       setLastUpdated(new Date());
-      
-      saveToCache(newCategoryData, resolvedCharInfo);      
+      saveToCache(newCategoryData, resolvedCharInfo);
     } catch (err) {
       console.error("Error in preloadGuildData:", err);
     } finally {
@@ -212,16 +203,16 @@ export function useGuildData() {
     await preloadGuildData();
   }, [preloadGuildData]);
 
-  return { 
+  return {
     categoryData,
     characterInfo,
     guildMembers,
-    loading, 
+    loading,
     loadingProgress,
     lastUpdated,
     preloadGuildData,
     refreshData,
     loadFromCache,
-    isCacheValid: (data: CachedData) => isCacheValid(data)
+    isCacheValid: (data: CachedData) => isCacheValid(data),
   };
 }
