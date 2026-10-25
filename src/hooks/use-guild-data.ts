@@ -32,7 +32,7 @@ interface CachedData {
   characterInfo: CharacterBasicInfo[];
 }
 
-const CACHE_KEY = "red-rose-highscores";
+const CACHE_KEY = "red-rose-highscores-v5";
 const CACHE_DURATION = 30 * 24 * 60 * 60 * 1000;
 const GUILD_MEMBER_LIMIT = 200;
 const HIGHSCORE_MEMBER_LIMIT = 5;
@@ -47,7 +47,7 @@ export function useGuildData() {
 
   const categories = [
     { key: "experience", label: "Experience" },
-    { key: "magic", label: "Magic Level" },
+    { key: "magiclevel", label: "Magic Level" },
     { key: "sword", label: "Sword Fighting" },
     { key: "axe", label: "Axe Fighting" },
     { key: "club", label: "Club Fighting" },
@@ -108,7 +108,10 @@ export function useGuildData() {
 
     try {
       setLoadingProgress('Fetching guild members...');
-      const guildRes = await fetch("https://api.tibiadata.com/v4/guild/Red%20Rose");
+      const guildRes = await fetch("https://api.tibiadata.com/v5/guild/Red%20Rose");
+      if (!guildRes.ok) {
+        throw new Error(`Failed to fetch guild data: ${guildRes.status}`);
+      }
       const guildData = await guildRes.json();
 
       const members: GuildMember[] = guildData.guild?.members || [];
@@ -121,8 +124,11 @@ export function useGuildData() {
         members.slice(0, GUILD_MEMBER_LIMIT).map(async (member: GuildMember) => {
           try {
             const charRes = await fetch(
-              `https://api.tibiadata.com/v4/character/${encodeURIComponent(member.name)}`
+              `https://api.tibiadata.com/v5/character/${encodeURIComponent(member.name)}`
             );
+            if (!charRes.ok) {
+              throw new Error(`Character request failed: ${charRes.status}`);
+            }
             const charData = await charRes.json();
             const charInfo = charData.character?.character;
             if (charInfo) {
@@ -150,8 +156,11 @@ export function useGuildData() {
 
           while (hasMorePages && currentPage <= 20 && guildMembersFound < HIGHSCORE_MEMBER_LIMIT) {
             const hsRes = await fetch(
-              `https://api.tibiadata.com/v4/highscores/Antica/${category.key}/all/${currentPage}`
+              `https://api.tibiadata.com/v5/highscores/Antica/${category.key}/all/${currentPage}`
             );
+            if (!hsRes.ok) {
+              throw new Error(`Highscore request failed: ${hsRes.status}`);
+            }
             const hsData = await hsRes.json();
 
             if (hsData.highscores?.highscore_list?.length > 0) {

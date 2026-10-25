@@ -131,7 +131,7 @@ export async function getLevelsSinceLastFriday(
 
     endMembers = endSnapshot.members as unknown as GuildMember[];
   } else {
-    const url = `https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`;
+    const url = `https://api.tibiadata.com/v5/guild/${encodeURIComponent(guildName)}`;
     console.log("Fetching current guild data from:", url);
 
     const res = await fetch(url);

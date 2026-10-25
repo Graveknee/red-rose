@@ -28,7 +28,7 @@ interface Vocation {
 
 const categories: Category[] = [
   { key: "experience", label: "Experience", icon: Trophy, color: "rose" },
-  { key: "magic", label: "Magic Level", icon: Zap, color: "purple" },
+  { key: "magiclevel", label: "Magic Level", icon: Zap, color: "purple" },
   { key: "sword", label: "Sword Fighting", icon: Sword, color: "blue" },
   { key: "axe", label: "Axe Fighting", icon: Axe, color: "green" },
   { key: "club", label: "Club Fighting", icon: Hammer, color: "amber" },

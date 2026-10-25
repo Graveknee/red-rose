@@ -7,8 +7,8 @@ type GuildMember = {
 };
 
 export async function takeSnapshot(guildName: string) {
-  const res = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
-  if (!res.ok) throw new Error("Failed to fetch guild data");
+  const res = await fetch(`https://api.tibiadata.com/v5/guild/${encodeURIComponent(guildName)}`);
+  if (!res.ok) throw new Error(`Failed to fetch guild data: ${res.status}`);
   const data = await res.json();
 
   const members: GuildMember[] = data.guild.members.map((m: GuildMember) => ({
