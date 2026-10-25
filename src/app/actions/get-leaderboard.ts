@@ -30,7 +30,7 @@
 
 //   if (!snapshot) throw new Error("No snapshot found");
 
-//   const res = await fetch(`https://api.tibiadata.com/v4/guild/${encodeURIComponent(guildName)}`);
+//   const res = await fetch(`https://api.tibiadata.com/v5/guild/${encodeURIComponent(guildName)}`);
 //   const data = await res.json();
 //   const currentMembers = data.guild.members.map((m: any) => ({ name: m.name, level: m.level }));
 

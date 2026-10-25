@@ -62,7 +62,10 @@ export default function GuildMembersPage() {
   const fetchGuildMembers = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://api.tibiadata.com/v4/guild/Red%20Rose");
+      const response = await fetch("https://api.tibiadata.com/v5/guild/Red%20Rose");
+      if (!response.ok) {
+        throw new Error(`Failed to fetch guild members: ${response.status}`);
+      }
       const data = await response.json();
       
       if (data.guild?.members) {
